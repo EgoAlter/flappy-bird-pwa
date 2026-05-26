@@ -1,8 +1,3 @@
-// main.js — application entry point
-// Responsibilities: register the service worker, then boot the game.
-// Kept separate from game.js so PWA infrastructure is never tangled
-// with game logic.
-
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/static/sw.js')
@@ -12,7 +7,14 @@ if ('serviceWorker' in navigator) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Game instantiation will go here once game.js is written.
-  // For now this confirms the shell is wired correctly.
-  console.log('[Main] Shell ready — awaiting game boot.');
+  const game = new Game('game-canvas');
+
+  // Unified input handler — one listener covers both mouse and touch.
+  // Touch devices fire touchstart; mice fire click.
+  // We use touchstart (not touchend) for minimum perceived latency on mobile.
+  document.addEventListener('keydown',     e => { if (e.code === 'Space') game.handleInput(); });
+  document.addEventListener('click',       ()  => game.handleInput());
+  document.addEventListener('touchstart',  ()  => game.handleInput(), { passive: true });
+  // passive: true tells the browser this listener won't call preventDefault()
+  // which lets it optimise scroll performance (good habit even though we disable scroll)
 });
