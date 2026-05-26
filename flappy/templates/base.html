@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <!--
+    viewport-fit=cover  → canvas extends under iPhone notch/Dynamic Island
+    user-scalable=no    → no accidental pinch-zoom during gameplay
+  -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+
+  <!-- PWA: W3C standard manifest -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#70c5ce">
+
+  <!--
+    PWA: iOS Safari specifics.
+    Safari partially ignores the W3C manifest spec — these tags are required
+    for the "Add to Home Screen" fullscreen behaviour on iPhone/iPad.
+  -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Flappy">
+  <link rel="apple-touch-icon" href="/static/assets/images/icon-192.png">
+
+  <title>{% block title %}Flappy Bird{% endblock %}</title>
+
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/game.css">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% block content %}{% endblock %}
+  {% block scripts %}{% endblock %}
+</body>
+</html>

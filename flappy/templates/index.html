@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="game-container">
+  <canvas id="game-canvas"></canvas>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Entities loaded before game.js — game.js depends on them -->
+<script src="/static/js/entities/background.js"></script>
+<script src="/static/js/entities/bird.js"></script>
+<script src="/static/js/entities/pipe.js"></script>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/game.js"></script>
+<!-- main.js always last — it boots everything above -->
+<script src="/static/js/main.js"></script>
+{% endblock %}

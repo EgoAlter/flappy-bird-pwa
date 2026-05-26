@@ -1,0 +1,30 @@
+body {
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  /*
+    env() safe-area variables handle the iPhone notch and home indicator.
+    On devices without a notch these resolve to 0 — no effect.
+  */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /*
+    Keeps pixel art crisp when the canvas is scaled up by CSS.
+    Without this, the browser anti-aliases sprites and they look blurry.
+  */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges; /* Firefox */
+}
