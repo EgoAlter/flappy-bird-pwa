@@ -28,23 +28,31 @@ class Game {
     // --- Entity instances ---
     this.bird       = new Bird();
     this.background = new Background();
-    this.pipes      = [];   // Array of Pipe instances, managed dynamically
+    this.pipes      = [];
 
     // --- Game state ---
-    this.state       = 'idle';    // 'idle' | 'playing' | 'dead'
+    this.state       = 'idle';
     this.score       = 0;
     this.bestScore   = this._loadBestScore();
-    this.deathTimer  = 0;   // Counts frames after death to prevent instant restart
+    this.deathTimer  = 0;
 
-    // --- Speed scaling ---
-    // Game gets slightly faster every 5 points — keeps it challenging
     this.speedMultiplier = 1;
 
+    // --- Event Listeners ---
     this._onResize = this._onResize.bind(this);
     window.addEventListener('resize', this._onResize);
     this._onResize();
-    this._loop();
 
+    // NEW: Wire up the Play Again button from the HTML overlay
+    const playAgainBtn = document.getElementById("play-again-btn");
+    if (playAgainBtn) {
+      playAgainBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevents the click from firing twice (once for button, once for document)
+        this.handleInput();
+      });
+    }
+
+    this._loop();
     console.log('[Game] Initialised. Best score:', this.bestScore);
   }
 
@@ -187,7 +195,7 @@ class Game {
     if (this.state !== 'playing') return;
 
     this.bird.alive = false;
-    this.state      = 'dead';
+    this.state      = 'dead'; 
     this.deathTimer = 0;
 
     // Persist best score locally
@@ -196,13 +204,49 @@ class Game {
       this._saveBestScore(this.bestScore);
     }
 
+    // Trigger the leaderboard flow (which handles the API post)
+    this.showLeaderboard(this.score);
+
     console.log('[Game] Dead. Score:', this.score, '| Best:', this.bestScore);
   }
+
+    showLeaderboard(currentScore) {
+    const overlay = document.getElementById("leaderboard-overlay");
+    const list    = document.getElementById("leaderboard-list");
+
+    // Show immediately with a loading state
+    list.innerHTML = '<li style="opacity:0.5">Loading...</li>';
+    overlay.classList.remove("hidden");
+
+    Api.postScore("Jake", currentScore)          // hardcoded name for now
+        .then(() => Api.getLeaderboard(10))
+        .then(scores => {
+        list.innerHTML = scores
+            .map((entry, i) => {
+            const isYours = entry.score === currentScore && i === scores.findIndex(s => s.score === currentScore);
+            return `
+                <li class="${isYours ? "highlight" : ""}">
+                <span>${i + 1}. ${entry.player}</span>
+                <span>${entry.score}</span>
+                </li>`;
+            })
+            .join("");
+        })
+        .catch(err => {
+        console.warn("Leaderboard failed:", err);
+        list.innerHTML = '<li style="opacity:0.5">Could not load</li>';
+        });
+    }
+
+    hideLeaderboard() {
+    document.getElementById("leaderboard-overlay").classList.add("hidden");
+    }
 
   // ---------------------------------------------------------------------------
   // RESET — called when player restarts from dead screen
   // ---------------------------------------------------------------------------
   _reset() {
+    this.hideLeaderboard();
     this.bird.reset();
     this.pipes            = [];
     this.score            = 0;

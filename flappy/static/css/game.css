@@ -28,3 +28,66 @@ body {
   image-rendering: pixelated;
   image-rendering: crisp-edges; /* Firefox */
 }
+
+.leaderboard-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 260px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  z-index: 10;
+}
+
+.leaderboard-overlay.hidden {
+  display: none;
+}
+
+.leaderboard-title {
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  opacity: 0.7;
+}
+
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.leaderboard-list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.leaderboard-list li:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-list .highlight {
+  color: #ffe066;  /* gold — this player's score */
+}
+
+.play-again-btn {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  min-width: 120px;
+  min-height: 44px; /* Apple's recommended minimum touch target size */
+  font-size: 16px;  /* Prevents iOS from zooming in on the button */
+}

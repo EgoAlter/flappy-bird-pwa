@@ -3,6 +3,11 @@
 {% block content %}
 <div id="game-container">
   <canvas id="game-canvas"></canvas>
+  <div id="leaderboard-overlay" class="leaderboard-overlay hidden">
+    <h2 class="leaderboard-title">Leaderboard</h2>
+    <ol id="leaderboard-list" class="leaderboard-list"></ol>
+    <button id="play-again-btn" class="play-again-btn">Play Again</button>
+  </div>
 </div>
 {% endblock %}
 
