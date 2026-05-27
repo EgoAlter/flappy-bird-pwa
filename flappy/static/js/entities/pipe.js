@@ -8,7 +8,7 @@
 
 class Pipe {
   static WIDTH        = 52;    // Logical units — matches original game
-  static SCROLL_SPEED = 2;     // Logical units per frame (increases with score)
+  static SCROLL_SPEED = 120;   // logical units/second
   static GAP_SIZE     = 120;   // Logical units between top and bottom pipe
   static CAP_HEIGHT   = 26;    // The flared end cap on each pipe
 
@@ -32,8 +32,8 @@ class Pipe {
     this.scored = false;
   }
 
-  update(speedMultiplier = 1) {
-    this.x -= Pipe.SCROLL_SPEED * speedMultiplier;
+  update(delta = 1/60, speedMultiplier = 1) {
+    this.x -= Pipe.SCROLL_SPEED * speedMultiplier * delta;
   }
 
   // Off the left edge of the logical world — safe to remove from array
@@ -62,6 +62,17 @@ class Pipe {
 
   draw(ctx, game) {
     ctx.save();
+
+    // --- CLIPPING REGION ---
+    // Prevents pipes from drawing outside the logical 288x512 play area
+    ctx.beginPath();
+    ctx.rect(
+      game.lx(0),
+      game.ly(0),
+      game.ls(Game.LOGICAL_WIDTH),
+      game.ls(Game.LOGICAL_HEIGHT)
+    );
+    ctx.clip();
 
     const sx     = game.lx(this.x);
     const sw     = game.ls(Pipe.WIDTH);
@@ -116,15 +127,17 @@ class Pipe {
       bottomCapY, game.ls(8), capH
     );
 
-    ctx.restore();
+    ctx.restore(); // Removes the clip for the next entity (the bird/UI)
 
     // --- Debug: draw hitboxes (uncomment to verify collision bounds) ---
-    // const b = this.getBounds();
-    // ctx.strokeStyle = 'rgba(255,100,0,0.7)';
-    // ctx.lineWidth = 1;
-    // ['top', 'bottom'].forEach(k => {
-    //   const r = b[k];
-    //   ctx.strokeRect(game.lx(r.x), game.ly(r.y), game.ls(r.width), game.ls(r.height));
-    // });
+    /*
+    const b = this.getBounds();
+    ctx.strokeStyle = 'rgba(255,100,0,0.7)';
+    ctx.lineWidth = 1;
+    ['top', 'bottom'].forEach(k => {
+      const r = b[k];
+      ctx.strokeRect(game.lx(r.x), game.ly(r.y), game.ls(r.width), game.ls(r.height));
+    });
+    */
   }
 }

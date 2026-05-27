@@ -14,9 +14,9 @@ class Bird {
   // Physics constants — tuned to feel like the original Flappy Bird.
   // Defined as static so you can tweak them in one place and see
   // the effect across the whole game immediately.
-  static GRAVITY       =  0.5;   // Logical units per frame², pulls bird down
-  static FLAP_VELOCITY = -8;     // Negative = upward in canvas coordinates
-  static MAX_FALL_SPEED = 12;    // Terminal velocity — prevents infinite acceleration
+  static GRAVITY       =  1800;  // units/s²  (was 0.5/frame × 60² = 1800)
+  static FLAP_VELOCITY = -480;   // units/s   (was -8/frame × 60 = -480)
+  static MAX_FALL_SPEED = 720;   // units/s   (was 12/frame × 60 = 720)
   static ROTATION_UP   = -25;   // Degrees: nose-up when flapping
   static ROTATION_DOWN =  90;   // Degrees: nose-down at max fall (death dive)
 
@@ -44,30 +44,26 @@ class Bird {
     this.velocity = Bird.FLAP_VELOCITY;
   }
 
-  update() {
+  update(delta = 1/60) {
     if (!this.alive) return;
 
-    // Apply gravity each frame
-    this.velocity += Bird.GRAVITY;
+    this.velocity += Bird.GRAVITY * delta;
 
-    // Clamp to terminal velocity
     if (this.velocity > Bird.MAX_FALL_SPEED) {
-      this.velocity = Bird.MAX_FALL_SPEED;
+        this.velocity = Bird.MAX_FALL_SPEED;
     }
 
-    this.y += this.velocity;
+    this.y += this.velocity * delta;
 
-    // Rotation tracks velocity — feels natural and readable to the player.
-    // Map velocity range [-8, 12] to rotation range [-25, 90] degrees.
-    const velocityRange = Bird.MAX_FALL_SPEED - Bird.FLAP_VELOCITY; // 20
-    const rotationRange = Bird.ROTATION_DOWN - Bird.ROTATION_UP;    // 115
+    // Rotation logic unchanged — still maps velocity to angle
+    const velocityRange = Bird.MAX_FALL_SPEED - Bird.FLAP_VELOCITY;
+    const rotationRange = Bird.ROTATION_DOWN - Bird.ROTATION_UP;
     this.rotation = Bird.ROTATION_UP + (this.velocity - Bird.FLAP_VELOCITY)
                     * (rotationRange / velocityRange);
 
-    // Clamp rotation to defined bounds
     this.rotation = Math.max(Bird.ROTATION_UP,
                     Math.min(Bird.ROTATION_DOWN, this.rotation));
-  }
+    }
 
   // Returns the hitbox as logical coordinates — used by game.js for collision
   getBounds() {

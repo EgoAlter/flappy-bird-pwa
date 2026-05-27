@@ -70,37 +70,35 @@ class Game {
   // ---------------------------------------------------------------------------
   // GAME LOOP
   // ---------------------------------------------------------------------------
-  _loop() {
-    requestAnimationFrame(() => {
-      this._update();
-      this._draw();
-      this._loop();
+  _loop(timestamp = 0) {
+    requestAnimationFrame((newTimestamp) => {
+        // Delta time in seconds, capped at 100ms to prevent
+        // huge jumps if the tab loses focus and then returns
+        const delta = Math.min((newTimestamp - timestamp) / 1000, 0.1);
+        this._update(delta);
+        this._draw();
+        this._loop(newTimestamp);
     });
-  }
+}
 
   // ---------------------------------------------------------------------------
   // UPDATE — state machine gates what gets ticked each frame
   // ---------------------------------------------------------------------------
-  _update() {
+  _update(delta) {
     switch (this.state) {
-
-      case 'idle':
-        // Background animates, bird bobs gently, pipes stay off screen
-        this.background.update(false);
+        case 'idle':
+        this.background.update(delta, false);
         this._bobBird();
         break;
-
-      case 'playing':
-        this.background.update(true);
-        this.bird.update();
-        this._updatePipes();
+        case 'playing':
+        this.background.update(delta, true);
+        this.bird.update(delta);
+        this._updatePipes(delta);
         this._checkCollisions();
         this._updateSpeed();
         break;
-
-      case 'dead':
-        // Bird continues to fall after death — feels physical
-        this.bird.update();
+        case 'dead':
+        this.bird.update(delta);
         this.deathTimer++;
         break;
     }
@@ -115,18 +113,16 @@ class Game {
   // ---------------------------------------------------------------------------
   // PIPE MANAGEMENT
   // ---------------------------------------------------------------------------
-  _updatePipes() {
-    // Spawn: if no pipes exist, or the last pipe has scrolled far enough left
+  _updatePipes(delta) {
     const lastPipe = this.pipes[this.pipes.length - 1];
     if (!lastPipe || lastPipe.x < Game.LOGICAL_WIDTH - Game.PIPE_INTERVAL) {
       this.pipes.push(new Pipe(Game.LOGICAL_WIDTH + 16));
     }
 
-    // Update each pipe
     for (const pipe of this.pipes) {
-      pipe.update(this.speedMultiplier);
+      // Pass both delta and multiplier to match pipe.js definition
+      pipe.update(delta, this.speedMultiplier);
 
-      // Scoring: bird has passed the pipe's centre
       if (!pipe.scored && pipe.x + Pipe.WIDTH / 2 < this.bird.x) {
         pipe.scored = true;
         this.score++;
@@ -140,7 +136,6 @@ class Game {
 
   _onScore() {
     console.log('[Game] Score:', this.score);
-    // Audio hook — we'll add a sound here in the polish step
   }
 
   _updateSpeed() {
