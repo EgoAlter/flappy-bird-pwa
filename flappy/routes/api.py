@@ -1,21 +1,40 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request, jsonify
+from flappy import db
+from flappy.models.score import Score
 
 api_bp = Blueprint("api", __name__)
 
-@api_bp.route("/scores", methods=["POST"])
+
+@api_bp.route("/api/scores", methods=["POST"])
 def post_score():
-    """
-    Accepts: { "player": "Jake", "score": 42 }
-    Stub for now — persistence logic added when the Score model is wired in.
-    """
     data = request.get_json(silent=True)
-    if not data or "score" not in data:
-        return jsonify({"error": "Invalid payload"}), 400
 
-    # TODO: persist via Score model in the next step
-    return jsonify({"status": "ok", "received": data}), 201
+    # Validate — never trust the client
+    if not data:
+        return jsonify({"error": "No JSON body"}), 400
 
-@api_bp.route("/leaderboard", methods=["GET"])
+    player = str(data.get("player", "")).strip()[:20]  # sanitise length
+    score  = data.get("score")
+
+    if not player:
+        return jsonify({"error": "player is required"}), 422
+    if not isinstance(score, int) or score < 0:
+        return jsonify({"error": "score must be a non-negative integer"}), 422
+
+    entry = Score(player=player, score=score)
+    db.session.add(entry)
+    db.session.commit()
+
+    return jsonify(entry.to_dict()), 201
+
+
+@api_bp.route("/api/leaderboard", methods=["GET"])
 def get_leaderboard():
-    """Returns top 10 scores. Stub until Score model is ready."""
-    return jsonify({"leaderboard": []}), 200
+    limit  = min(int(request.args.get("limit", 10)), 100)  # cap at 100
+    scores = (
+        Score.query
+        .order_by(Score.score.desc())
+        .limit(limit)
+        .all()
+    )
+    return jsonify([s.to_dict() for s in scores]), 200

@@ -25,11 +25,12 @@ def create_app(config_name: str = "default") -> Flask:
     from flappy.routes.api import api_bp
 
     app.register_blueprint(main_bp)
-    app.register_blueprint(api_bp, url_prefix="/api")
+    app.register_blueprint(api_bp)
 
     # --- Database bootstrap ---
     # Creates tables if they don't exist. Safe to call on every startup.
     with app.app_context():
+        from flappy.models import score  # noqa — registers the model
         db.create_all()
 
     return app
