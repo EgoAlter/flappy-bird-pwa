@@ -211,35 +211,73 @@ class Game {
   }
 
     showLeaderboard(currentScore) {
-    const overlay = document.getElementById("leaderboard-overlay");
-    const list    = document.getElementById("leaderboard-list");
+        const overlay     = document.getElementById("leaderboard-overlay");
+        const title       = document.getElementById("overlay-title");
+        const nameEntry   = document.getElementById("name-entry");
+        const nameInput   = document.getElementById("player-name-input");
+        const submitBtn   = document.getElementById("submit-score-btn");
+        const list        = document.getElementById("leaderboard-list");
 
-    // Show immediately with a loading state
-    list.innerHTML = '<li style="opacity:0.5">Loading...</li>';
-    overlay.classList.remove("hidden");
+        // Pre-fill from localStorage — returning players don't retype their name
+        nameInput.value = localStorage.getItem('flappy_player_name') || '';
 
-    Api.postScore("Jake", currentScore)          // hardcoded name for now
-        .then(() => Api.getLeaderboard(10))
-        .then(scores => {
-        list.innerHTML = scores
-            .map((entry, i) => {
-            const isYours = entry.score === currentScore && i === scores.findIndex(s => s.score === currentScore);
-            return `
-                <li class="${isYours ? "highlight" : ""}">
-                <span>${i + 1}. ${entry.player}</span>
-                <span>${entry.score}</span>
-                </li>`;
-            })
-            .join("");
-        })
-        .catch(err => {
-        console.warn("Leaderboard failed:", err);
-        list.innerHTML = '<li style="opacity:0.5">Could not load</li>';
-        });
+        // Phase 1: name entry
+        title.textContent = 'Game Over';
+        nameEntry.classList.remove('hidden');
+        list.innerHTML = '';
+        overlay.classList.remove('hidden');
+
+        // Small delay so the keyboard doesn't immediately obscure the overlay
+        setTimeout(() => nameInput.focus(), 100);
+
+        const submitScore = () => {
+            const player = nameInput.value.trim().slice(0, 20) || 'Anonymous';
+            localStorage.setItem('flappy_player_name', player);
+
+            // Phase 2: loading state
+            nameEntry.classList.add('hidden');
+            title.textContent = 'Leaderboard';
+            list.innerHTML = '<li style="opacity:0.5; justify-content:center;">Saving…</li>';
+
+            // POST returns the saved entry with its ID — use that to identify
+            // the player's row rather than matching on name+score (breaks on ties)
+            let ourId = null;
+
+            Api.postScore(player, currentScore)
+                .then(saved => {
+                    ourId = saved.id;
+                    return Api.getLeaderboard(10);
+                })
+                .then(scores => {
+                    // Phase 3: leaderboard
+                    list.innerHTML = scores
+                        .map((entry, i) => `
+                            <li class="${entry.id === ourId ? 'highlight' : ''}">
+                                <span>${i + 1}. ${entry.player}</span>
+                                <span>${entry.score}</span>
+                            </li>`)
+                        .join('');
+                })
+                .catch(err => {
+                    console.warn('[Game] Leaderboard error:', err);
+                    list.innerHTML = '<li style="opacity:0.5; justify-content:center;">Could not save score</li>';
+                });
+        };
+
+        submitBtn.onclick = submitScore;
+
+        // Enter key submits — natural keyboard behaviour
+        nameInput.onkeydown = (e) => {
+            if (e.key === 'Enter') submitScore();
+        };
     }
 
     hideLeaderboard() {
-    document.getElementById("leaderboard-overlay").classList.add("hidden");
+    const overlay   = document.getElementById("leaderboard-overlay");
+    const nameEntry = document.getElementById("name-entry");
+
+    overlay.classList.add('hidden');
+    nameEntry.classList.remove('hidden');  // reset for next death
     }
 
   // ---------------------------------------------------------------------------

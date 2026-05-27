@@ -4,7 +4,22 @@
 <div id="game-container">
   <canvas id="game-canvas"></canvas>
   <div id="leaderboard-overlay" class="leaderboard-overlay hidden">
-    <h2 class="leaderboard-title">Leaderboard</h2>
+    <h2 class="leaderboard-title" id="overlay-title">Leaderboard</h2>
+
+    <div id="name-entry">
+      <p class="name-prompt">Enter your name</p>
+      <input
+        id="player-name-input"
+        type="text"
+        maxlength="20"
+        placeholder="Your name"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+      >
+      <button id="submit-score-btn" class="submit-score-btn">Submit Score</button>
+    </div>
+
     <ol id="leaderboard-list" class="leaderboard-list"></ol>
     <button id="play-again-btn" class="play-again-btn">Play Again</button>
   </div>
@@ -12,12 +27,10 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Entities loaded before game.js — game.js depends on them -->
 <script src="/static/js/entities/background.js"></script>
 <script src="/static/js/entities/bird.js"></script>
 <script src="/static/js/entities/pipe.js"></script>
 <script src="/static/js/api.js"></script>
 <script src="/static/js/game.js"></script>
-<!-- main.js always last — it boots everything above -->
 <script src="/static/js/main.js"></script>
 {% endblock %}
