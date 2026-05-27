@@ -51,4 +51,91 @@ class Bird {
     this.velocity += Bird.GRAVITY;
 
     // Clamp to terminal velocity
-    if (this.velocity > Bird
+    if (this.velocity > Bird.MAX_FALL_SPEED) {
+      this.velocity = Bird.MAX_FALL_SPEED;
+    }
+
+    this.y += this.velocity;
+
+    // Rotation tracks velocity — feels natural and readable to the player.
+    // Map velocity range [-8, 12] to rotation range [-25, 90] degrees.
+    const velocityRange = Bird.MAX_FALL_SPEED - Bird.FLAP_VELOCITY; // 20
+    const rotationRange = Bird.ROTATION_DOWN - Bird.ROTATION_UP;    // 115
+    this.rotation = Bird.ROTATION_UP + (this.velocity - Bird.FLAP_VELOCITY)
+                    * (rotationRange / velocityRange);
+
+    // Clamp rotation to defined bounds
+    this.rotation = Math.max(Bird.ROTATION_UP,
+                    Math.min(Bird.ROTATION_DOWN, this.rotation));
+  }
+
+  // Returns the hitbox as logical coordinates — used by game.js for collision
+  getBounds() {
+    // Shrink hitbox by 4 logical units on each side (the "forgiveness" margin)
+    const margin = 4;
+    return {
+      x:      this.x - Bird.WIDTH  / 2 + margin,
+      y:      this.y - Bird.HEIGHT / 2 + margin,
+      width:  Bird.WIDTH  - margin * 2,
+      height: Bird.HEIGHT - margin * 2,
+    };
+  }
+
+  draw(ctx, game) {
+    const screenX = game.lx(this.x);
+    const screenY = game.ly(this.y);
+    const w = game.ls(Bird.WIDTH);
+    const h = game.ls(Bird.HEIGHT);
+
+    ctx.save();
+
+    // Translate to bird centre, rotate, then draw — this is the correct
+    // order for rotation around a centred pivot point
+    ctx.translate(screenX, screenY);
+    ctx.rotate(this.rotation * Math.PI / 180);
+
+    // --- Placeholder sprite: yellow rectangle with an eye ---
+    // Will be replaced by a spritesheet in the assets step.
+
+    // Body
+    ctx.fillStyle = '#f5c518';
+    ctx.beginPath();
+    ctx.roundRect(-w / 2, -h / 2, w, h, game.ls(6));
+    ctx.fill();
+
+    // Wing
+    ctx.fillStyle = '#e6a800';
+    ctx.beginPath();
+    ctx.ellipse(0, game.ls(4), w * 0.35, h * 0.25, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye (white)
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(w * 0.18, -h * 0.1, game.ls(5), 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pupil
+    ctx.fillStyle = '#1a1a2e';
+    ctx.beginPath();
+    ctx.arc(w * 0.22, -h * 0.08, game.ls(2.5), 0, Math.PI * 2);
+    ctx.fill();
+
+    // Beak
+    ctx.fillStyle = '#ff8c00';
+    ctx.beginPath();
+    ctx.moveTo(w * 0.45, -h * 0.05);
+    ctx.lineTo(w * 0.72, -h * 0.12);
+    ctx.lineTo(w * 0.72,  h * 0.08);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+
+    // --- Debug: draw hitbox (comment out once you've verified it) ---
+    // const b = this.getBounds();
+    // ctx.strokeStyle = 'rgba(255,0,0,0.6)';
+    // ctx.lineWidth = 1;
+    // ctx.strokeRect(game.lx(b.x), game.ly(b.y), game.ls(b.width), game.ls(b.height));
+  }
+}
