@@ -3,7 +3,7 @@
 A device-independent Flappy Bird clone built as a portfolio project. Playable in the browser,
 installable as a Progressive Web App, with a persistent leaderboard backed by a REST API.
 
-**Live demo:** _[link once deployed]_
+**Live demo:** _[https://flappy-bird-pwa.onrender.com/]_
 
 ---
 
